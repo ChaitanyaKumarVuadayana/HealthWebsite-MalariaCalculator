@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://unpkg.com/tailwindcss@^1.0/dist/tailwind.min.css" rel="stylesheet">
+    <title>Malaria Calculator</title>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.5/xlsx.min.js"></script>
+
+    <style>
+        * {
+            text-align: center;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        #container {
+            color: black;
+            width: 495px;
+            padding-bottom: 10px;
+            justify-content: center;
+            align-items: center;
+            border: 1px solid black;
+            border-radius: 15px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+            background-color: aquamarine;
+        }
+
+        #out {
+            width: 600px;
+            height: 50px;
+            border-radius: 15px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+    </style>
+
+    <script>
+        function Operations() {
+            let inA = parseInt(document.getElementById("A").value);
+            let inB = parseInt(document.getElementById("B").value);
+            let inC = parseInt(document.getElementById("C").value);
+            let inD = parseInt(document.getElementById("D").value);
+            let inE = parseFloat(document.getElementById("E").value);
+
+            let outA = false;
+            let outB = false;
+            let outC = false;
+            let outD = false;
+            let outE = false;
+
+            let count = 0;
+
+            if (inA >= 18 && inA <= 27) {
+                // outA = true;
+                count++;
+            }
+            if (inB >= 100 && inB <= 250) {
+                // outB = true;
+                count++;
+            }
+            if (inC >= 150 && inC <= 550) {
+                // outC = true;
+                count++;
+            }
+            if (inD >= 50 && inD <= 225) {
+                // outD = true;
+                count++;
+            }
+            if (inE >= 0.5 && inE <= 5) {
+                // outE = true;
+                count++;
+            }
+            // let out = outA && outB && outC && outD && outE;
+            let probabilty = (count / 5) * 100;
+
+            // document.getElementById("out").value = out;
+            document.getElementById("hid").value = count;
+            if (count > 3) {
+                document.getElementById("out").style.backgroundColor = "red";
+                document.getElementById("out").style.color = "white";
+                document.getElementById("out").value = "Prediction: There is a " + probabilty + "% chance of getting affected by malaria.";
+                document.getElementById("malariaLink").removeAttribute("hidden");
+            } else {
+                if (count == 0) {
+                    document.getElementById("out").style.backgroundColor = "green";
+                    document.getElementById("out").style.color = "white";
+                    document.getElementById("out").value = "Prediction: You are Safe, There is a low chance of getting affected by malaria.";
+                }
+                else {
+                    document.getElementById("out").style.backgroundColor = "orange";
+                    document.getElementById("out").style.color = "white";
+                    document.getElementById("out").value = "Prediction: There is a " + probabilty + "% chance of getting affected by malaria.";
+                    document.getElementById("malariaLink").removeAttribute("hidden");
+                }
+            }
+        }
+
+        function OperationWithExcel(result) {
+            var jsonData = result.Sheet1; // Assuming the sheet name is "Sheet1"
+
+            // Create the table element
+            var table = document.createElement("table");
+
+            // Create and append the table headers
+            var headerRow = document.createElement("tr");
+            Object.keys(jsonData[0]).forEach(function (header) {
+                var th = document.createElement("th");
+                th.textContent = header;
+                headerRow.appendChild(th);
+            });
+            th = document.createElement("th");
+            th.textContent = "Output";
+            headerRow.appendChild(th);
+            table.appendChild(headerRow);
+
+            // Create and append the table rows with output
+            jsonData.forEach(function (rowData) {
+                var row = document.createElement("tr");
+                Object.values(rowData).forEach(function (cellData) {
+                    var td = document.createElement("td");
+                    td.textContent = cellData;
+                    row.appendChild(td);
+                });
+
+                // Add the output cell with the result of Operation() function
+                var outputCell = document.createElement("td");
+                var output = Operation(rowData); // Fix the function call here
+                outputCell.textContent = output;
+                row.appendChild(outputCell);
+
+                table.appendChild(row);
+            });
+
+            // Clear the outputDiv and append the table
+            var outputDiv = document.getElementById("outputDiv");
+            outputDiv.innerHTML = "";
+            outputDiv.appendChild(table);
+        }
+
+
+        // Function to perform the desired operation on each row
+        // Function to perform the desired operation on each row
+        function Operation(rowData) {
+            // Extract the data from the rowData object
+            let inA = parseInt(rowData["Temperature"]);
+            let inB = parseInt(rowData["Rainfall"]);
+            let inC = parseInt(rowData["NDVI (Shrubs)"]);
+            let inD = parseInt(rowData["NDVI (Healthy Vegetation)"]);
+            let inE = parseFloat(rowData["Water Bodies Drainage"]);
+
+            // Perform your desired operation on the data
+            let count = 0;
+
+            if (inA >= 18 && inA <= 27) {
+                count++;
+            }
+            if (inB >= 100 && inB <= 250) {
+                count++;
+            }
+            if (inC >= 150 && inC <= 550) {
+                count++;
+            }
+            if (inD >= 50 && inD <= 225) {
+                count++;
+            }
+            if (inE >= 0.5 && inE <= 5) {
+                count++;
+            }
+
+            let probability = (count / 5) * 100;
+
+            if (count > 3) {
+                return "Prediction: There is a " + probability + "% chance of getting affected by malaria.";
+            } else if (count === 0) {
+                return "Prediction: You are safe. Low chance of getting affected by malaria.";
+            } else {
+                return "Prediction: There is a " + probability + "% chance of getting affected by malaria.";
+            }
+        }
+
+
+
+    </script>
+
+    <script>
+
+        // Method to upload a valid excel file
+        function upload() {
+            var files = document.getElementById('file_upload').files;
+            if (files.length == 0) {
+                alert("Please choose any file...");
+                return;
+            }
+            var filename = files[0].name;
+            var extension = filename.substring(filename.lastIndexOf(".")).toUpperCase();
+            if (extension == '.XLS' || extension == '.XLSX') {
+                excelFileToJSON(files[0]);
+            } else {
+                alert("Please select a valid excel file.");
+            }
+        }
+
+        // Method to read excel file and convert it into JSON 
+        function excelFileToJSON(file) {
+            try {
+                var reader = new FileReader();
+                reader.readAsBinaryString(file);
+                reader.onload = function (e) {
+
+                    var data = e.target.result;
+                    var workbook = XLSX.read(data, {
+                        type: 'binary'
+                    });
+                    var result = {};
+                    workbook.SheetNames.forEach(function (sheetName) {
+                        var roa = XLSX.utils.sheet_to_row_object_array(workbook.Sheets[sheetName]);
+                        if (roa.length > 0) {
+                            result[sheetName] = roa;
+                        }
+                    });
+                    console.log(result);
+
+                    // Convert the JSON data to a URL parameter string
+                    var dataParam = encodeURIComponent(JSON.stringify(result));
+
+                    // Pass the data as a URL parameter to the output page
+                    window.location.href = 'output.html?data=' + dataParam;
+                }
+            } catch (e) {
+                console.error(e);
+            }
+        }
+    </script>
+
+</head>
+
+<body>
+    <header class="text-gray-600 body-font">
+        <div class="container mx-auto flex flex-wrap p-5 flex-col md:flex-row items-center">
+            <a class="flex title-font font-medium items-center text-gray-900 mb-4 md:mb-0">
+                <img src="DP.webp" alt="Your Image" height="50" width="50">
+
+                <span class="ml-3 text-xl"><strong>Malarial index calculator</strong><br><sup><small>for
+                            public</small></sup></span>
+            </a>
+            <nav class="md:ml-auto flex flex-wrap items-center text-base justify-center">
+
+                <a class="mr-5 hover:text-gray-900" href="https://nha.gov.in/PM-JAY" target="_blank">National Health
+                    Authority</a>
+                <a class="mr-5 hover:text-gray-900" href="https://www.who.int/" target="_blank">World Health
+                    Organisation</a>
+
+
+            </nav>
+            <button
+                class="inline-flex items-center bg-yellow-300 border-0 py-1 px-3 focus:outline-none hover:bg-gray-200 rounded text-base mt-4 md:mt-0"><a
+                    class="hover:text-gray-900" href="https://www.nhs.uk/live-well/healthy-weight/bmi-calculator/"
+                    target="_blank">Full Health Test</a>
+            </button>
+        </div>
+    </header>
+    <hn></hn>
+
+
+    <!-- photo -->
+    <section>
+        <section class="text-gray-600 body-font">
+            <div class="container mx-auto flex px-5 py-4 md:flex-row flex-col items-center">
+                <div class="lg:max-w-lg lg:w-full md:w-1/2 w-5/6 mb-10 md:mb-0">
+                    <img class="object-cover object-center rounded" alt="hero"
+                        src="https://source.unsplash.com/720x600/?Mosquito Prevention">
+                </div>
+                <div
+                    class="lg:flex-grow md:w-1/2 lg:pl-24 md:pl-16 flex flex-col md:items-start md:text-left items-center text-center">
+                    <h1 class="title-font sm:text-5xl text-3xl mb-4 font-medium text-gray-900">Malaria a silent killer!
+                        <!-- <br class="hidden lg:inline-block"> -->
+                    </h1>
+                    <p class="mb-8 leading-relaxed">Malaria is a life-threatening disease spread to humans by some types
+                        of mosquitoes. It is mostly found in tropical countries. It is preventable and curable.
+
+                        The infection is caused by a parasite and does not spread from person to person.
+
+                        Symptoms can be mild or life-threatening. Mild symptoms are fever, chills and headache. Severe
+                        symptoms include fatigue, confusion, seizures, and difficulty breathing.</p>
+                    <div class="flex justify-center">
+                        <a href="https://www.who.int/news-room/fact-sheets/detail/malaria" target="_blank">
+                            <button
+                                class="inline-flex text-white bg-indigo-500 border-0 py-2 px-6 focus:outline-none hover:bg-indigo-600 rounded text-lg"
+                                style="margin-left: 175px">Learn
+                                More</button>
+                        </a>
+
+                        <a href="https://en.wikipedia.org/wiki/Malaria" target="_blank">
+                            <button
+                                class="ml-4 inline-flex text-gray-700 bg-gray-300 border-0 py-2 px-6 focus:outline-none hover:bg-gray-200 rounded text-lg">Wikipedia</button>
+                        </a>
+
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- BMI inex -->
+        <section class="text-gray-600 body-font">
+            <div class="container px-5 py-5 mx-auto flex flex-wrap">
+                <div class="lg:w-1/2 w-full mb-10 lg:mb-0 rounded-lg overflow-hidden">
+                    <iframe src="BMIindex.html" frameborder="0" scrolling="no"
+                        style="width: 100%; height: 500px;"></iframe>
+                </div>
+                <div class="flex flex-col flex-wrap lg:py-6 -mb-10 lg:w-1/2 lg:pl-12 lg:text-left text-center">
+                    <div class="flex flex-col mb-10 lg:items-start items-center">
+
+                        <div class="flex-grow">
+                            <h2 class="text-gray-900 text-lg title-font font-medium mb-3">Are you Healthy ?</h2>
+                            <p class="leading-relaxed text-base">BMI, or Body Mass Index, is a widely used measure to
+                                determine if a person has a healthy body weight in relation to their height. It is
+                                calculated by dividing a person's weight in kilograms by the square of their height in
+                                meters. The resulting number provides an estimate of their body fatness and helps
+                                categorize them into different weight status categories.
+
+                                BMI is a valuable tool for assessing weight status and identifying potential health
+                                risks associated with weight, such as overweight and obesity. However, it's important to
+                                remember that BMI is a general indicator and doesn't consider factors like muscle mass
+                                or body composition. As a result, it may not accurately reflect the health of certain
+                                individuals, such as athletes or those with high muscle mass.</p>
+                            <a href="https://www.nhs.uk/common-health-questions/lifestyle/what-is-the-body-mass-index-bmi/"
+                                target="_blank" class="mt-3 text-indigo-500 inline-flex items-center">Learn More
+                                <svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                                    stroke-width="2" class="w-4 h-4 ml-2" viewBox="0 0 24 24">
+                                    <path d="M5 12h14M12 5l7 7-7 7"></path>
+                                </svg>
+                            </a>
+
+                            </svg>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+        </section>
+
+        <!-- calculator -->
+        <section class="text-gray-600 body-font overflow-hidden">
+            <div class="container px-5 py-5 mx-auto" id="cal">
+                <div class="lg:w-4/5 mx-auto flex flex-wrap">
+                    <div class="lg:w-1/2 w-full lg:pr-10 lg:py-6 mb-6 lg:mb-0">
+                        <h2 class="text-sm title-font text-gray-500 tracking-widest">for public</h2>
+                        <h1 class="text-gray-900 text-3xl title-font font-medium mb-4">Malaria Calculator</h1>
+                        <div class="flex mb-4">
+                            <a
+                                class="flex-grow text-indigo-500 border-b-2 border-indigo-500 py-2 text-lg px-1">Description</a>
+
+                        </div>
+                        <p class="leading-relaxed mb-4">Introducing the Malaria Calculator: A powerful tool for disease
+                            prevention and awareness. This user-friendly calculator provides personalized risk
+                            assessments and tailored recommendations to combat malaria. By harnessing technology and
+                            medical expertise, it empowers individuals and healthcare professionals to make informed
+                            decisions, promoting proactive measures against this life-threatening disease. Together,
+                            let's eradicate malaria and build a healthier future.</p>
+                        <div class="flex border-t border-gray-200 py-2">
+                            <span class="text-gray-500">World Wide</span>
+                            <span class="ml-auto text-gray-900">247 million</span>
+                        </div>
+                        <div class="flex border-t border-gray-200 py-2">
+                            <span class="text-gray-500">India</span>
+                            <span class="ml-auto text-gray-900">15 million</span>
+                        </div>
+                        <div class="flex border-t border-b mb-6 border-gray-200 py-2">
+                            <span class="text-gray-500">Nigeria</span>
+                            <span class="ml-auto text-gray-900">79.04 million</span>
+                        </div>
+                    </div>
+                    <div id="container">
+                        <h3 style="padding: 20px;"><strong><u>Environmental Inputs</u></strong></h3>
+
+                        <form>
+                            <label>Temperature: </label>
+                            <input type="text" id="A" placeholder="degrees temperature" required> &degC
+                            <br><br>
+                            <label>Rainfall: </label>
+                            <input type="text" id="B" placeholder="millimeter" required> mm
+                            <br><br>
+                            <label>NDVI (Shrubs): </label>
+                            <input type="text" id="C" placeholder="square kilometer" required> Sq.km
+                            <br><br>
+                            <label>NDVI (Healthy Vegetation): </label>
+                            <input type="text" id="D" placeholder="square kilometer" required> Sq.km
+                            <br><br>
+                            <label>Water Bodies Drainage: </label>
+                            <input type="text" id="E" placeholder="kilometer" required> km
+                            <br><br>
+                            <div style="padding: 5px; color: white;"><button type="button" onclick="Operations()"
+                                    style="background-color: rgba(43, 40, 40, 0.689); padding: 3px 8px 3px 8px; border-radius: 10px;">Predict</button>
+                            </div>
+                            <textarea id="json-result" style="display:none;height:500px;width:350px;"></textarea>
+                            <input type="text" id="hid" hidden><br>
+                            <hr>
+                            <h3 style="padding: 20px; margin-top: 20px;"><strong><u>Multiple Inputs</u></strong></h3>
+                            <input type="file" id="file_upload" accept=".xlsx">
+                            <button onclick="upload()"
+                                style="color: white; background-color: rgba(43, 40, 40, 0.689); padding: 3px 8px 3px 8px; border-radius: 10px;">Upload</button>
+                            <div id="outputDiv"></div>
+
+                        </form>
+
+                    </div>
+                    <br>
+                    <div>
+                        <form>
+                            <input type="text" id="out" placeholder="Prediction" readonly
+                                style="margin-left: 75%; margin-top: 15px;">
+                            <br><br>
+                            <a href="https://stanfordhealthcare.org/medical-conditions/primary-care/malaria/treatments/prevention.html"
+                                id="malariaLink" style="text-decoration-line: none;" hidden>Precautions of malaria</a>
+
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- map -->
+        <section class="text-gray-600 body-font relative">
+            <div class="absolute inset-0 bg-gray-300">
+                <iframe width="100%" height="600"
+                    src="https://apps.who.int/malaria/maps/threats/#/maps?theme=prevention&mapType=prevention%3A0&bounds=%5B%5B41.22588497917275%2C-1.9253340218630086%5D%2C%5B108.98723449873131%2C40.68106289660588%5D%5D&insecticideClass=PYRETHROIDS&insecticideTypes=&assayTypes=MOLECULAR_ASSAY%2CBIOCHEMICAL_ASSAY%2CSYNERGIST-INSECTICIDE_BIOASSAY&synergistTypes=&species=&vectorSpecies=&surveyTypes=&mmType=1&excludeLowerPatients=false&excludeLowerSamples=false&endemicity=false&storyMode=false&storyModeStep=0&years=2010%2C2023"></iframe>
+        </section>
+
+</body>
+
+</html>

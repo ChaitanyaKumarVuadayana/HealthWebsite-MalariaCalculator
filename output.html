@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Output Page</title>
+    <style>
+        /* Add your styling for the output page here if needed */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            text-align: center;
+        }
+
+        /* Add styling for the table */
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 20px 0;
+        }
+
+        th, td {
+            padding: 8px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        tr:hover {
+            background-color: #ddd;
+        }
+
+        /* Add styling for the output cell */
+        .output-cell {
+            font-weight: bold;
+        }
+
+        .low-risk {
+            color: green;
+        }
+
+        .high-risk {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <h1>Output Page</h1>
+    <div id="outputDiv"></div>
+    <script>
+        // Retrieve the data parameter from the URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const dataParam = urlParams.get('data');
+        if (dataParam) {
+            const jsonData = JSON.parse(decodeURIComponent(dataParam));
+            OperationWithExcel(jsonData);
+        }
+
+        // Function to perform the desired operation on each row
+        function OperationWithExcel(result) {
+            var jsonData = result.Sheet1; // Assuming the sheet name is "Sheet1"
+
+            // Create the table element
+            var table = document.createElement("table");
+
+            // Create and append the table headers
+            var headerRow = document.createElement("tr");
+            Object.keys(jsonData[0]).forEach(function (header) {
+                var th = document.createElement("th");
+                th.textContent = header;
+                headerRow.appendChild(th);
+            });
+            th = document.createElement("th");
+            th.textContent = "Output";
+            headerRow.appendChild(th);
+            table.appendChild(headerRow);
+
+            // Create and append the table rows with output
+            jsonData.forEach(function (rowData) {
+                var row = document.createElement("tr");
+                Object.values(rowData).forEach(function (cellData) {
+                    var td = document.createElement("td");
+                    td.textContent = cellData;
+                    row.appendChild(td);
+                });
+
+                // Add the output cell with the result of Operation() function
+                var outputCell = document.createElement("td");
+                var output = Operation(rowData); // Fix the function call here
+                outputCell.textContent = output;
+
+                // Add class to style the output cell based on risk level
+                outputCell.classList.add(output.toLowerCase().includes('low') ? 'low-risk' : 'high-risk');
+
+                row.appendChild(outputCell);
+
+                table.appendChild(row);
+            });
+
+            // Clear the outputDiv and append the table
+            var outputDiv = document.getElementById("outputDiv");
+            outputDiv.innerHTML = "";
+            outputDiv.appendChild(table);
+        }
+
+        // Function to perform the desired operation on each row
+        function Operation(rowData) {
+            // Extract the data from the rowData object
+            let inA = parseInt(rowData["Temperature"]);
+            let inB = parseInt(rowData["Rainfall"]);
+            let inC = parseInt(rowData["NDVI (Shrubs)"]);
+            let inD = parseInt(rowData["NDVI (Healthy Vegetation)"]);
+            let inE = parseFloat(rowData["Water Bodies Drainage"]);
+
+            // Perform your desired operation on the data
+            let count = 0;
+
+            if (inA >= 18 && inA <= 27) {
+                count++;
+            }
+            if (inB >= 100 && inB <= 250) {
+                count++;
+            }
+            if (inC >= 150 && inC <= 550) {
+                count++;
+            }
+            if (inD >= 50 && inD <= 225) {
+                count++;
+            }
+            if (inE >= 0.5 && inE <= 5) {
+                count++;
+            }
+
+            let probability = (count / 5) * 100;
+
+            if (count > 3) {
+                return "Prediction: There is a " + probability + "% chance of getting affected by malaria.";
+            } else if (count === 0) {
+                return "Prediction: You are safe. Low chance of getting affected by malaria.";
+            } else {
+                return "Prediction: There is a " + probability + "% chance of getting affected by malaria.";
+            }
+        }
+    </script>
+</body>
+</html>
